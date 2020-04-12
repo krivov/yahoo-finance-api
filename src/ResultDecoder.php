@@ -7,6 +7,7 @@ namespace Scheb\YahooFinanceApi;
 use Scheb\YahooFinanceApi\Exception\ApiException;
 use Scheb\YahooFinanceApi\Exception\InvalidValueException;
 use Scheb\YahooFinanceApi\Results\DividendData;
+use Scheb\YahooFinanceApi\Results\FundamentalTimeseries;
 use Scheb\YahooFinanceApi\Results\HistoricalData;
 use Scheb\YahooFinanceApi\Results\Option;
 use Scheb\YahooFinanceApi\Results\OptionChain;
@@ -122,6 +123,27 @@ class ResultDecoder
         'twoHundredDayAverage' => ValueMapperInterface::TYPE_FLOAT,
         'twoHundredDayAverageChange' => ValueMapperInterface::TYPE_FLOAT,
         'twoHundredDayAverageChangePercent' => ValueMapperInterface::TYPE_FLOAT,
+    ];
+
+    const FUNDAMENTAL_TIMESERIES_FIELDS_MAP = [
+        'quarterlyPeRatio' => 'float',
+        'quarterlyForwardPeRatio' => 'float',
+        'trailingEnterprisesValueEBITDARatio' => 'float',
+        'quarterlyPegRatio' => 'float',
+        'trailingMarketCap' => 'float',
+        'trailingForwardPeRatio' => 'float',
+        'quarterlyPsRatio' => 'float',
+        'quarterlyMarketCap' => 'float',
+        'trailingEnterpriseValue' => 'float',
+        'quarterlyEnterprisesValueRevenueRatio' => 'float',
+        'quarterlyEnterprisesValueEBITDARatio' => 'float',
+        'trailingPegRatio' => 'float',
+        'trailingPeRatio' => 'float',
+        'quarterlyEnterpriseValue' => 'float',
+        'trailingEnterprisesValueRevenueRatio' => 'float',
+        'quarterlyPbRatio' => 'float',
+        'trailingPbRatio' => 'float',
+        'trailingPsRatio' => 'float',
     ];
 
     /**
@@ -289,6 +311,22 @@ class ResultDecoder
         }, $results);
     }
 
+    public function transformFundamentalTimeseries($responseBody)
+    {
+        $decoded = json_decode($responseBody, true);
+        if (!isset($decoded['timeseries']['result']) || !is_array($decoded['timeseries']['result'])) {
+            throw new ApiException('Yahoo Search API returned an invalid result.', ApiException::INVALID_RESPONSE);
+        }
+
+        $results = $decoded['timeseries']['result'];
+
+        $arrayModels = array_map(function ($item) use ($models) {
+            return $this->createFundamentalTimeseries($item);
+        }, $results);
+
+        return call_user_func_array('array_merge', $arrayModels);
+    }
+
     private function createQuote(array $json): Quote
     {
         $mappedValues = [];
@@ -304,6 +342,37 @@ class ResultDecoder
         }
 
         return new Quote($mappedValues);
+    }
+
+    private function createFundamentalTimeseries(array $json)
+    {
+        $models = [];
+        if (
+            $json['meta'] && $json['meta']['type'] &&
+            isset($json['meta']['type'][0]) &&
+            isset($json[$json['meta']['type'][0]]) &&
+            array_key_exists($json['meta']['type'][0], self::FUNDAMENTAL_TIMESERIES_FIELDS_MAP)
+        ) {
+            $fundamentalType = $json['meta']['type'][0];
+            foreach ($json[$fundamentalType] as $ind => $item) {
+                if (
+                    isset($json['timestamp'][$ind]) &&
+                    isset($json[$fundamentalType][$ind]) &&
+                    isset($json[$fundamentalType][$ind]['periodType']) &&
+                    isset($json[$fundamentalType][$ind]['reportedValue']) &&
+                    isset($json[$fundamentalType][$ind]['reportedValue']['raw'])
+                ) {
+                    $models[] = new FundamentalTimeseries(
+                        $this->transformQuotesSummary($fundamentalType, $fundamentalType, 'string'),
+                        $this->transformQuotesSummary($fundamentalType, $json[$fundamentalType][$ind]['reportedValue']['raw'], self::FUNDAMENTAL_TIMESERIES_FIELDS_MAP[$fundamentalType]),
+                        $this->transformQuotesSummary($fundamentalType, $json['timestamp'][$ind], 'date'),
+                        $this->transformQuotesSummary($fundamentalType, $json[$fundamentalType][$ind]['periodType'], 'string')
+                    );
+                }
+            }
+        }
+
+        return $models;
     }
 
     public function transformQuotesSummary(string $responseBody): array
