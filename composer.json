@@ -1,11 +1,15 @@
 {
-    "name": "scheb/yahoo-finance-api",
+    "name": "krivov/yahoo-finance-api",
     "type": "library",
     "description": "PHP library for accessing Yahoo Finance data",
     "keywords": ["yahoo", "finance", "stock", "api"],
-    "homepage": "https://github.com/scheb/yahoo-finance-api",
+    "homepage": "https://github.com/krivov/yahoo-finance-api",
     "license": "MIT",
     "authors": [
+        {
+            "name": "Sergey Krivov",
+            "email": "sergey@krivov.info"
+        },
         {
             "name": "Christian Scheb",
             "email": "me@christianscheb.de"
