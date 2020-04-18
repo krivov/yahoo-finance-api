@@ -352,8 +352,7 @@ class ResultDecoder
         $models = [];
         if ($json['meta'] && $json['meta']['type'] &&
             isset($json['meta']['type'][0]) &&
-            isset($json[$json['meta']['type'][0]]) &&
-            array_key_exists($json['meta']['type'][0], self::FUNDAMENTAL_TIMESERIES_FIELDS_MAP)
+            isset($json[$json['meta']['type'][0]])
         ) {
             $fundamentalType = $json['meta']['type'][0];
             foreach ($json[$fundamentalType] as $ind => $item) {
@@ -365,7 +364,7 @@ class ResultDecoder
                 ) {
                     $models[] = new FundamentalTimeseries(
                         $this->valueMapper->mapValue($fundamentalType, 'string'),
-                        $this->valueMapper->mapValue($json[$fundamentalType][$ind]['reportedValue']['raw'], self::FUNDAMENTAL_TIMESERIES_FIELDS_MAP[$fundamentalType]),
+                        $this->valueMapper->mapValue($json[$fundamentalType][$ind]['reportedValue']['raw'], self::FUNDAMENTAL_TIMESERIES_FIELDS_MAP[$fundamentalType]?? 'float'),
                         $this->valueMapper->mapValue($json['timestamp'][$ind], 'date'),
                         $this->valueMapper->mapValue($json[$fundamentalType][$ind]['periodType'], 'string')
                     );

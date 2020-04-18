@@ -28,7 +28,7 @@ $historicalData = $client->getHistoricalQuoteData('AAPL', ApiClient::INTERVAL_1_
 $historicalDividendData = $client->getHistoricalDividendData('AAPL', new DateTime('-365 days'), new DateTime('today'));
 
 // Returns an array of Scheb\YahooFinanceApi\Results\SplitData
-$historicalSplitData = $client->getHistoricalSplitData('AAPL', new DateTime('-365 days'), new DateTime('today'));
+$historicalSplitData = $client->getHistoricalSplitData('AAPL', new DateTime('-5 years'), new DateTime('today'));
 
 // Returns Scheb\YahooFinanceApi\Results\Quote
 $exchangeRate = $client->getExchangeRate('USD', 'EUR');
