@@ -37,6 +37,3 @@ $quotes = $client->getQuotes(['AAPL', 'GOOG']);
 
 // Returns Scheb\YahooFinanceApi\Results\FundamentalTimeseries
 $fundamentals = $client->getFundamentalTimeseries("AAPL");
-
-// Returns Scheb\YahooFinanceApi\Results\KeyStatistics
-$keyStatistics = $client->getKeyStatistics("AAPL");
