@@ -281,7 +281,7 @@ class ApiClient
         $crumb = $this->getCrumb($qs, $cookieJar);
 
         // Fetch quotes
-        $modules = 'financialData,quoteType,defaultKeyStatistics,assetProfile,summaryDetail';
+        $modules = 'financialData,quoteType,defaultKeyStatistics,assetProfile,summaryDetail,calendarEvents,price,pageViews,financialsTemplate,quoteUnadjustedPerformanceOverview';
         $url = 'https://query'.$qs.'.finance.yahoo.com/v10/finance/quoteSummary/'.$symbol.'?crumb='.$crumb.'&modules='.$modules;
         $responseBody = (string) $this->client->request('GET', $url, ['cookies' => $cookieJar, 'headers' => $this->getHeaders()])->getBody();
 
@@ -315,7 +315,7 @@ class ApiClient
      * @throws ApiException
      * @throws \GuzzleHttp\Exception\GuzzleException
      */
-    public function getFundamentalTimeseries($symbol)
+    public function getFundamentalTimeseries($symbol): array
     {
         $url = 'https://query1.finance.yahoo.com/ws/fundamentals-timeseries/v1/finance/timeseries/' . $symbol . '?lang=en-US&region=US&symbol=' . $symbol . '&padTimeSeries=true&type=quarterlyMarketCap%2CtrailingMarketCap%2CquarterlyEnterpriseValue%2CtrailingEnterpriseValue%2CquarterlyPeRatio%2CtrailingPeRatio%2CquarterlyForwardPeRatio%2CtrailingForwardPeRatio%2CquarterlyPegRatio%2CtrailingPegRatio%2CquarterlyPsRatio%2CtrailingPsRatio%2CquarterlyPbRatio%2CtrailingPbRatio%2CquarterlyEnterprisesValueRevenueRatio%2CtrailingEnterprisesValueRevenueRatio%2CquarterlyEnterprisesValueEBITDARatio%2CtrailingEnterprisesValueEBITDARatio&merge=false&period1=493590046&period2=' . time() . '&corsDomain=finance.yahoo.com';
         $responseBody = (string) $this->client->request('GET', $url)->getBody();

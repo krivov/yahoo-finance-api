@@ -10,7 +10,11 @@ use Scheb\YahooFinanceApi\ApiClientFactory;
 $client = ApiClientFactory::createApiClient();
 
 // Or use your own Guzzle client and pass it in
-$options = [/* ... */];
+$options = [
+    'headers' => [
+        'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36',
+    ],
+];
 $guzzleClient = new Client($options);
 $client = ApiClientFactory::createApiClient($guzzleClient);
 
@@ -18,7 +22,13 @@ $client = ApiClientFactory::createApiClient($guzzleClient);
 $searchResult = $client->search('Apple');
 
 // Returns an array of Scheb\YahooFinanceApi\Results\HistoricalData
-$historicalData = $client->getHistoricalData('AAPL', ApiClient::INTERVAL_1_DAY, new DateTime('-14 days'), new DateTime('today'));
+$historicalData = $client->getHistoricalQuoteData('AAPL', ApiClient::INTERVAL_1_DAY, new DateTime('-14 days'), new DateTime('today'));
+
+// Returns an array of Scheb\YahooFinanceApi\Results\DividendData
+$historicalDividendData = $client->getHistoricalDividendData('AAPL', new DateTime('-365 days'), new DateTime('today'));
+
+// Returns an array of Scheb\YahooFinanceApi\Results\SplitData
+$historicalSplitData = $client->getHistoricalSplitData('AAPL', new DateTime('-365 days'), new DateTime('today'));
 
 // Returns Scheb\YahooFinanceApi\Results\Quote
 $exchangeRate = $client->getExchangeRate('USD', 'EUR');
@@ -37,3 +47,8 @@ $quotes = $client->getQuotes(['AAPL', 'GOOG']);
 
 // Returns Scheb\YahooFinanceApi\Results\FundamentalTimeseries
 $fundamentals = $client->getFundamentalTimeseries("AAPL");
+
+// Returns Scheb\YahooFinanceApi\Results\OptionChain
+$optionChain = $client->getOptionChain("AAPL");
+
+$stockSummary = $client->stockSummary("AAPL");
