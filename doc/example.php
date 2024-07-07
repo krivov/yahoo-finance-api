@@ -46,9 +46,9 @@ $quote = $client->getQuote('AAPL');
 $quotes = $client->getQuotes(['AAPL', 'GOOG']);
 
 // Returns Scheb\YahooFinanceApi\Results\FundamentalTimeseries
-$fundamentals = $client->getFundamentalTimeseries("AAPL");
+$fundamentals = $client->getFundamentalTimeseries('AAPL');
 
 // Returns Scheb\YahooFinanceApi\Results\OptionChain
-$optionChain = $client->getOptionChain("AAPL");
+$optionChain = $client->getOptionChain('AAPL');
 
-$stockSummary = $client->stockSummary("AAPL");
+$stockSummary = $client->stockSummary('AAPL');

@@ -125,7 +125,7 @@ class ResultDecoder
         'twoHundredDayAverageChangePercent' => ValueMapperInterface::TYPE_FLOAT,
     ];
 
-    const FUNDAMENTAL_TIMESERIES_FIELDS_MAP = [
+    public const FUNDAMENTAL_TIMESERIES_FIELDS_MAP = [
         'quarterlyPeRatio' => 'float',
         'quarterlyForwardPeRatio' => 'float',
         'trailingEnterprisesValueEBITDARatio' => 'float',
@@ -311,20 +311,20 @@ class ResultDecoder
         }, $results);
     }
 
-    public function transformFundamentalTimeseries($responseBody)
+    public function transformFundamentalTimeseries(string $responseBody): array
     {
         $decoded = json_decode($responseBody, true);
-        if (!isset($decoded['timeseries']['result']) || !is_array($decoded['timeseries']['result'])) {
+        if (!isset($decoded['timeseries']['result']) || !\is_array($decoded['timeseries']['result'])) {
             throw new ApiException('Yahoo Search API returned an invalid result.', ApiException::INVALID_RESPONSE);
         }
 
         $results = $decoded['timeseries']['result'];
 
-        $arrayModels = array_map(function ($item) {
+        $arrayModels = array_map(function (array $item) {
             return $this->createFundamentalTimeseries($item);
         }, $results);
 
-        return call_user_func_array('array_merge', $arrayModels);
+        return \call_user_func_array('array_merge', $arrayModels);
     }
 
     private function createQuote(array $json): Quote
@@ -344,27 +344,24 @@ class ResultDecoder
         return new Quote($mappedValues);
     }
 
-    /**
-     * @throws ApiException
-     */
     private function createFundamentalTimeseries(array $json): array
     {
         $models = [];
-        if ($json['meta'] && $json['meta']['type'] &&
-            isset($json['meta']['type'][0]) &&
-            isset($json[$json['meta']['type'][0]])
+        if ($json['meta'] && $json['meta']['type']
+            && isset($json['meta']['type'][0])
+            && isset($json[$json['meta']['type'][0]])
         ) {
             $fundamentalType = $json['meta']['type'][0];
-            foreach ($json[$fundamentalType] as $ind => $item) {
-                if (isset($json['timestamp'][$ind]) &&
-                    isset($json[$fundamentalType][$ind]) &&
-                    isset($json[$fundamentalType][$ind]['periodType']) &&
-                    isset($json[$fundamentalType][$ind]['reportedValue']) &&
-                    isset($json[$fundamentalType][$ind]['reportedValue']['raw'])
+            foreach ((array) $json[$fundamentalType] as $ind => $item) {
+                if (isset($json['timestamp'][$ind])
+                    && isset($json[$fundamentalType][$ind])
+                    && isset($json[$fundamentalType][$ind]['periodType'])
+                    && isset($json[$fundamentalType][$ind]['reportedValue'])
+                    && isset($json[$fundamentalType][$ind]['reportedValue']['raw'])
                 ) {
                     $models[] = new FundamentalTimeseries(
                         $this->valueMapper->mapValue($fundamentalType, 'string'),
-                        $this->valueMapper->mapValue($json[$fundamentalType][$ind]['reportedValue']['raw'], self::FUNDAMENTAL_TIMESERIES_FIELDS_MAP[$fundamentalType]?? 'float'),
+                        $this->valueMapper->mapValue($json[$fundamentalType][$ind]['reportedValue']['raw'], self::FUNDAMENTAL_TIMESERIES_FIELDS_MAP[$fundamentalType] ?? 'float'),
                         $this->valueMapper->mapValue($json['timestamp'][$ind], 'date'),
                         $this->valueMapper->mapValue($json[$fundamentalType][$ind]['periodType'], 'string')
                     );
@@ -477,66 +474,5 @@ class ResultDecoder
         }
 
         return new OptionContract($mappedValues);
-    }
-
-
-    private function mapValue($field, $rawValue, $type)
-    {
-        if (null === $rawValue) {
-            return null;
-        }
-        switch ($type) {
-            case 'float':
-                return $this->mapFloatValue($field, $rawValue);
-            case 'percent':
-                return $this->mapPercentValue($field, $rawValue);
-            case 'int':
-                return $this->mapIntValue($field, $rawValue);
-            case 'date':
-                return $this->mapDateValue($field, $rawValue);
-            case 'string':
-                return (string) $rawValue;
-            case 'bool':
-                return $this->mapBoolValue($rawValue);
-            default:
-                throw new \InvalidArgumentException('Invalid data type '.$type.' for field '.$field);
-        }
-    }
-    private function mapFloatValue($field, $rawValue)
-    {
-        if (!is_numeric($rawValue)) {
-            throw new ApiException('Not a number in field "'.$field.'": '.$rawValue, ApiException::INVALID_VALUE);
-        }
-        return (float) $rawValue;
-    }
-    private function mapPercentValue($field, $rawValue)
-    {
-        if ('%' !== substr($rawValue, -1, 1)) {
-            throw new ApiException('Not a percent in field "'.$field.'": '.$rawValue, ApiException::INVALID_VALUE);
-        }
-        $numericPart = substr($rawValue, 0, strlen($rawValue) - 1);
-        if (!is_numeric($numericPart)) {
-            throw new ApiException('Not a percent in field "'.$field.'": '.$rawValue, ApiException::INVALID_VALUE);
-        }
-        return (float) $numericPart;
-    }
-    private function mapIntValue($field, $rawValue)
-    {
-        if (!is_numeric($rawValue)) {
-            throw new ApiException('Not a number in field "'.$field.'": '.$rawValue, ApiException::INVALID_VALUE);
-        }
-        return (int) $rawValue;
-    }
-    private function mapBoolValue($rawValue)
-    {
-        return (bool) $rawValue;
-    }
-    private function mapDateValue($field, $rawValue)
-    {
-        try {
-            return new \DateTime('@'.$rawValue);
-        } catch (\Exception $e) {
-            throw new ApiException('Not a date in field "'.$field.'": '.$rawValue, ApiException::INVALID_VALUE);
-        }
     }
 }

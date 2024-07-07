@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Scheb\YahooFinanceApi\Results;
 
 class FundamentalTimeseries implements \JsonSerializable
@@ -10,12 +12,12 @@ class FundamentalTimeseries implements \JsonSerializable
     private $name;
 
     /**
-     * @var string
+     * @var float
      */
     private $value;
 
     /**
-     * @var string
+     * @var \DateTimeInterface
      */
     private $date;
 
@@ -24,7 +26,7 @@ class FundamentalTimeseries implements \JsonSerializable
      */
     private $periodType;
 
-    public function __construct($name, $value, $date, $periodType)
+    public function __construct(string $name, float $value, \DateTimeInterface $date, string $periodType)
     {
         $this->name = $name;
         $this->value = $value;
@@ -40,33 +42,21 @@ class FundamentalTimeseries implements \JsonSerializable
         return get_object_vars($this);
     }
 
-    /**
-     * @return string
-     */
     public function getName(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
-    public function getValue(): string
+    public function getValue(): float
     {
         return $this->value;
     }
 
-    /**
-     * @return string
-     */
-    public function getDate(): string
+    public function getDate(): \DateTimeInterface
     {
         return $this->date;
     }
 
-    /**
-     * @return string
-     */
     public function getPeriodType(): string
     {
         return $this->periodType;
